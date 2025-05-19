@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Stocks Page</title>
+<style>
+  body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
+  nav ul { list-style: none; display: flex; gap: 20px; padding: 0; }
+  nav li { cursor: pointer; padding: 8px 12px; background: #eee; border-radius: 5px; }
+  nav li:hover { background: #cce7ff; }
+  .container { max-width: 900px; margin: auto; background: white; padding: 20px; border-radius: 8px; }
+  label { margin-right: 10px; font-weight: bold; }
+  input, select, button { padding: 6px 10px; margin: 5px 10px 10px 0; border-radius: 4px; border: 1px solid #ccc; }
+  button.custom-btn {
+    background: #007bff; color: white; border: none; cursor: pointer;
+    font-weight: bold; border-radius: 5px; padding: 8px 16px;
+  }
+  button.custom-btn:hover {
+    background: #0056b3;
+  }
+  #chartContainer { margin-top: 30px; }
+  table { width: 100%; border-collapse: collapse; margin-top: 30px; }
+  th, td { padding: 10px; border: 1px solid #ddd; text-align: center; }
+  th { background: #007bff; color: white; }
+  .bullish { color: green; font-weight: bold; }
+  .bearish { color: red; font-weight: bold; }
+  a { color: #007bff; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+</style>
+</head>
+<body>
+
+<nav>
+  <ul>
+    <li onclick="location.href='home.html'">Home</li>
+    <li onclick="location.href='stocks.html'">Stocks</li>
+    <li onclick="location.href='dogs.html'">Dogs</li>
+  </ul>
+</nav>
+
+<div class="container">
+  <h1>Stocks Lookup</h1>
+
+  <label for="tickerInput">Stock Ticker:</label>
+  <input type="text" id="tickerInput" placeholder="Enter ticker e.g. MSFT" />
+
+  <label for="daysSelect">Select Days:</label>
+  <select id="daysSelect">
+    <option value="30">30 Days</option>
+    <option value="60">60 Days</option>
+    <option value="90">90 Days</option>
+  </select>
+
+  <button class="custom-btn" id="fetchStockBtn">Fetch Stock Data</button>
+
+  <div id="chartContainer">
+    <canvas id="stockChart"></canvas>
+  </div>
+
+  <h2>Top 5 Stocks Discussed on Reddit</h2>
+  <table id="redditStocksTable">
+    <thead>
+      <tr>
+        <th>Ticker</th>
+        <th>Comment Count</th>
+        <th>Sentiment</th>
+      </tr>
+    </thead>
+    <tbody>
+
+    </tbody>
+  </table>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  const apiKey = 'J9tyGASNG5y5iXIP6_DKNf5B4etgBFJ8';
+
+  // Convert epoch ms to readable date string
+  function formatDate(epochMillis) {
+    const d = new Date(epochMillis);
+    return d.toLocaleDateString();
+  }
+
+  async function fetchStockData(ticker, days) {
+    const endDate = new Date();
+    const startDate = new Date();
+    startDate.setDate(endDate.getDate() - days);
+
+    const fromDate = startDate.toISOString().split('T')[0];
+    const toDate = endDate.toISOString().split('T')[0];
+
+    const url = `https://api.polygon.io/v2/aggs/ticker/${ticker}/range/1/day/${fromDate}/${toDate}?adjusted=true&sort=asc&limit=120&apiKey=${apiKey}`;
+
+    try {
+      const res = await fetch(url);
+      const data = await res.json();
+      if (data.status !== 'OK') {
+        alert('Error fetching stock data: ' + data.error);
+        return null;
+      }
+      return data.results;
+    } catch (error) {
+      alert('Fetch error: ' + error);
+      return null;
+    }
+  }
+
+  function createChart(labels, data) {
+    const ctx = document.getElementById('stockChart').getContext('2d');
+    if(window.stockChartInstance) window.stockChartInstance.destroy();
+
+    window.stockChartInstance = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: labels,
+        datasets: [{
+          label: 'Closing Price',
+          data: data,
+          borderColor: 'blue',
+          backgroundColor: 'rgba(0,0,255,0.1)',
+          fill: true,
+          tension: 0.2,
+        }]
+      },
+      options: {
+        scales: {
+          x: { title: { display: true, text: 'Date' } },
+          y: { title: { display: true, text: 'Price (USD)' }, beginAtZero: false }
+        }
+      }
+    });
+  }
+
+  async function fetchAndDisplayStock() {
+    const tickerInput = document.getElementById('tickerInput').value.trim().toUpperCase();
+    const days = parseInt(document.getElementById('daysSelect').value);
+
+    if (!tickerInput) {
+      alert('Please enter a stock ticker.');
+      return;
+    }
+
+    const results = await fetchStockData(tickerInput, days);
+    if (!results || results.length === 0) {
+      alert('No data found for ticker ' + tickerInput);
+      return;
+    }
+
+    const labels = results.map(r => formatDate(r.t));
+    const closingPrices = results.map(r => r.c);
+
+    createChart(labels, closingPrices);
+  }
+
+ 
+  async function fetchRedditTopStocks() {
+    const url = 'https://tradestie.com/api/v1/apps/reddit?date=2022-04-03'; 
+    try {
+      const res = await fetch(url);
+      const data = await res.json();
+
+      // Take top 5
+      const top5 = data.slice(0, 5);
+
+      const tbody = document.querySelector('#redditStocksTable tbody');
+      tbody.innerHTML = '';
+
+      top5.forEach(stock => {
+        const tr = document.createElement('tr');
+
+        // Ticker with link to Yahoo Finance
+        const tickerTd = document.createElement('td');
+        const link = document.createElement('a');
+        link.href = `https://finance.yahoo.com/quote/${stock.ticker}`;
+        link.target = '_blank';
+        link.textContent = stock.ticker;
+        tickerTd.appendChild(link);
+        tr.appendChild(tickerTd);
+
+        // Comment Count
+        const commentsTd = document.createElement('td');
+        commentsTd.textContent = stock.comment_count;
+        tr.appendChild(commentsTd);
+
+        // Sentiment with icon
+        const sentimentTd = document.createElement('td');
+        const sentimentText = stock.sentiment.toLowerCase();
+        if (sentimentText === 'bullish') {
+          sentimentTd.innerHTML = '🐂 Bullish';
+          sentimentTd.classList.add('bullish');
+        } else if (sentimentText === 'bearish') {
+          sentimentTd.innerHTML = '🐻 Bearish';
+          sentimentTd.classList.add('bearish');
+        } else {
+          sentimentTd.textContent = stock.sentiment;
+        }
+        tr.appendChild(sentimentTd);
+
+        tbody.appendChild(tr);
+      });
+
+    } catch (error) {
+      console.error('Error fetching Reddit stocks:', error);
+    }
+  }
+
+  // Event listeners
+  document.getElementById('fetchStockBtn').addEventListener('click', fetchAndDisplayStock);
+
+  // Initial load Reddit top stocks
+  fetchRedditTopStocks();
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Class Activities - Home</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <nav>
+    <ul class="navbar">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="stocks.html">Stocks</a></li>
+      <li><a href="dogs.html">Dogs</a></li>
+    </ul>
+  </nav>
+
+  <main>
+    <h1>Welcome to Class Activities!</h1>
+    <button id="stocksBtn" class="custom-btn">Go to Stocks</button>
+    <button id="dogsBtn" class="custom-btn">Go to Dogs</button>
+
+    <section id="quote-section">
+      <h2>Quote of the Day</h2>
+      <p id="quote">Loading quote...</p>
+    </section>
+  </main>
+
+  <section id="audio-controls">
+    <h3>Voice Commands</h3>
+    <ul>
+      <li>Say "Hello" - Shows alert with Hello World</li>
+      <li>Say "Change the color to [color]" - Changes background color</li>
+      <li>Say "Navigate to [page]" - Navigates to Home, Stocks, or Dogs</li>
+    </ul>
+    <button id="start-audio">Turn On Audio</button>
+    <button id="stop-audio">Turn Off Audio</button>
+  </section>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/annyang/2.6.1/annyang.min.js"></script>
+  <script src="HomePage.js"></script>
+</body>
+</html>
