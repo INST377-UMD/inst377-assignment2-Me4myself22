@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Dogs Page</title>
+
+<!-- Simple-Slider  -->
+<link
+  rel="stylesheet"
+  href="https://cdn.jsdelivr.net/npm/simple-slider@1.5.1/simple-slider.min.css"
+/>
+
+<style>
+  /* ----- General Styles ----- */
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    padding: 20px;
+    background-color: #f9f9f9;
+  }
+  nav {
+    margin-bottom: 20px;
+    background-color: #333;
+  }
+  nav ul {
+    list-style: none;
+    padding: 10px;
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+  }
+  nav ul li {
+    display: inline;
+  }
+  nav ul li a {
+    color: #fff;
+    text-decoration: none;
+    font-weight: bold;
+    padding: 8px 12px;
+    display: inline-block;
+  }
+  nav ul li a:hover {
+    background-color: #555;
+    border-radius: 4px;
+  }
+
+  h1 {
+    text-align: center;
+    margin-bottom: 30px;
+    color: #333;
+  }
+
+  /* ----- Carousel Styles ----- */
+  #dog-carousel {
+    max-width: 600px;
+    margin: 0 auto 40px auto;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    background: #fff;
+  }
+  #dog-carousel img {
+    width: 100%;
+    height: 400px;
+    object-fit: cover;
+  }
+
+  /* ----- Breed Buttons ----- */
+  #breed-buttons {
+    max-width: 800px;
+    margin: 0 auto 30px auto;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+  }
+  .breed-btn {
+    background-color: #4CAF50;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 25px;
+    color: white;
+    cursor: pointer;
+    font-weight: 600;
+    transition: background-color 0.3s ease;
+  }
+  .breed-btn:hover {
+    background-color: #45a049;
+  }
+
+  /* ----- Breed Info ----- */
+  #breed-info {
+    max-width: 700px;
+    margin: 0 auto 40px auto;
+    background-color: #fff;
+    padding: 20px 30px;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    display: none;
+  }
+  #breed-info h2 {
+    margin-top: 0;
+    color: #2c3e50;
+  }
+  #breed-info p {
+    font-size: 1.1em;
+    line-height: 1.5;
+    color: #555;
+  }
+
+  /* ----- Audio Instructions ----- */
+  #audio-instructions {
+    max-width: 700px;
+    margin: 0 auto;
+    background-color: #222;
+    color: #eee;
+    padding: 15px 25px;
+    border-radius: 10px;
+    font-size: 0.95em;
+  }
+  #audio-instructions ul {
+    list-style: disc inside;
+    margin: 10px 0 15px 0;
+  }
+  #audio-instructions button {
+    background-color: #ff5722;
+    border: none;
+    color: white;
+    padding: 10px 15px;
+    margin-right: 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+  }
+  #audio-instructions button:hover {
+    background-color: #e64a19;
+  }
+</style>
+</head>
+<body>
+  <nav>
+    <ul>
+      <li><a href="index.html">Home</a></li>
+      <li><a href="stocks.html">Stocks</a></li>
+      <li><a href="dogs.html">Dogs</a></li>
+    </ul>
+  </nav>
+
+  <h1>Dogs Page</h1>
+
+  <!-- Carousel -->
+  <div id="dog-carousel" class="simple-slider"></div>
+
+  <!-- Breed Buttons -->
+  <div id="breed-buttons"></div>
+
+  <!-- Breed Info -->
+  <div id="breed-info">
+    <h2 id="breed-name"></h2>
+    <p id="breed-description"></p>
+    <p><strong>Life Expectancy:</strong> <span id="breed-life"></span></p>
+  </div>
+
+  <!-- Audio Instructions -->
+  <div id="audio-instructions">
+    <p><strong>Audio Commands:</strong></p>
+    <ul>
+      <li>Say "Hello" - triggers alert</li>
+      <li>Say "Change the color to [color]" - changes background color</li>
+      <li>Say "Navigate to [home, stocks, dogs]" - navigates pages</li>
+      <li>Say "Load Dog Breed [breed name]" - shows info for that breed</li>
+    </ul>
+    <button id="audio-on">Turn On Audio</button>
+    <button id="audio-off">Turn Off Audio</button>
+  </div>
+
+  <!-- JS Libraries -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/annyang/2.6.1/annyang.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/simple-slider@1.5.1/simple-slider.min.js"></script>
+
+  <script>
+    // Dog breed data
+    const breedInfoData = {
+      "bulldog": {
+        description: "Bulldogs are medium-sized, muscular dogs with a distinctive pushed nose and wrinkled face.",
+        life: "8 - 10 years"
+      },
+      "poodle": {
+        description: "Poodles are intelligent, active, and elegant dogs known for their curly coats.",
+        life: "12 - 15 years"
+      },
+      "labrador": {
+        description: "Labrador Retrievers are friendly, outgoing, and high-spirited companions.",
+        life: "10 - 12 years"
+      },
+      "beagle": {
+        description: "Beagles are small hounds with a keen sense of smell and a curious nature.",
+        life: "12 - 15 years"
+      },
+      "dalmatian": {
+        description: "Dalmatians are energetic dogs with distinctive black or liver spotted coats.",
+        life: "10 - 13 years"
+      },
+      "boxer": {
+        description: "Boxers are strong, energetic, and playful dogs with a protective nature.",
+        life: "9 - 12 years"
+      },
+      "chihuahua": {
+        description: "Chihuahuas are tiny dogs with big personalities and great loyalty.",
+        life: "14 - 16 years"
+      },
+      "germanshepherd": {
+        description: "German Shepherds are intelligent, courageous, and versatile working dogs.",
+        life: "9 - 13 years"
+      },
+      "shiba": {
+        description: "Shiba Inu dogs are alert, agile, and spirited with a bold personality.",
+        life: "12 - 15 years"
+      },
+      "husky": {
+        description: "Siberian Huskies are medium-sized, high-energy dogs known for their endurance.",
+        life: "12 - 14 years"
+      }
+    };
+
+    // Helper: Capitalize first letter
+    function capitalize(str) {
+      return str.charAt(0).toUpperCase() + str.slice(1);
+    }
+
+    // Load 10 random dog images and create carousel
+    async function loadRandomDogs() {
+      try {
+        const response = await fetch('https://dog.ceo/api/breeds/image/random/10');
+        const data = await response.json();
+        const carousel = document.getElementById('dog-carousel');
+        carousel.innerHTML = ''; // Clear previous
+
+        data.message.forEach(url => {
+          const img = document.createElement('img');
+          img.src = url;
+          img.alt = 'Dog image';
+          carousel.appendChild(img);
+        });
+
+        // Initialize Simple-Slider
+        new SimpleSlider('#dog-carousel', {
+          slideDuration: 3000,
+          slideEase: 'ease',
+          navButtons: true,
+          navDots: true,
+          autoplay: true
+        });
+      } catch (error) {
+        console.error('Failed to load random dogs:', error);
+      }
+    }
+
+    // Load breed buttons dynamically
+    async function loadBreeds() {
+      try {
+        const response = await fetch('https://dog.ceo/api/breeds/list/all');
+        const data = await response.json();
+        const breeds = Object.keys(data.message);
+        const buttonsContainer = document.getElementById('breed-buttons');
+        buttonsContainer.innerHTML = '';
+
+        breeds.forEach(breed => {
+          const btn = document.createElement('button');
+          btn.classList.add('breed-btn');
+          btn.textContent = capitalize(breed);
+          btn.onclick = () => showBreedInfo(breed);
+          buttonsContainer.appendChild(btn);
+        });
+      } catch (error) {
+        console.error('Failed to load breeds:', error);
+      }
+    }
+
+    
+    function showBreedInfo(breed) {
+      const info = breedInfoData[breed] || {
+        description: "Description not available.",
+        life: "N/A"
+      };
+      document.getElementById('breed-name').textContent = capitalize(breed);
+      document.getElementById('breed-description').textContent = info.description;
+      document.getElementById('breed-life').textContent = info.life;
+      document.getElementById('breed-info').style.display = 'block';
+    
+      document.getElementById('breed-info').scrollIntoView({behavior: 'smooth'});
+    }
+
+    // Setup audio commands with annyang
+    function setupAudioCommands() {
+      if (!annyang) {
+        console.warn('Annyang not supported in this browser.');
+        return;
+      }
+
+      const commands = {
+        'hello': () => alert('Hello World!'),
+        'change the color to *color': (color) => {
+          document.body.style.backgroundColor = color;
+        },
+        'navigate to *page': (page) => {
+          const validPages = ['home', 'stocks', 'dogs'];
+          page = page.toLowerCase();
+          if (validPages.includes(page)) {
+            window.location.href = `${page}.html`;
+          }
+        },
+        'load dog breed *breed': (breed) => {
+          breed = breed.toLowerCase().replace(/\s+/g, '');
+          showBreedInfo(breed);
+        }
+      };
+
+      annyang.addCommands(commands);
+
+      // Audio controls
+      document.getElementById('audio-on').onclick = () => {
+        annyang.start();
+        alert('Audio commands ON');
+      };
+      document.getElementById('audio-off').onclick = () => {
+        annyang.abort();
+        alert('Audio commands OFF');
+      };
+
+      // Start listening by default
+      annyang.start();
+    }
+
+    // On page load initialize everything
+    window.onload = () => {
+      loadRandomDogs();
+      loadBreeds();
+      setupAudioCommands();
+    };
+  </script>
+</body>
+</html>
